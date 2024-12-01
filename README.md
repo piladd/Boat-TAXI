@@ -1,7 +1,7 @@
 ## Boat TAXI
 
 
-## Состав команды:
+## Состав команды Непризнанные гении:
 1. **Рыбаков Степан** - <span style="color:red">*Frontend Developer*</span>
 2. **Савран Дмитрий** - <span style="color:red">*Backend Developer*</span>
 3. **Богданович Кристина** - <span style="color:red">*Backend Developer*</span>
