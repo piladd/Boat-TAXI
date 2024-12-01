@@ -2,9 +2,9 @@
 
 
 ## Состав команды:
-1. **Рыбаков Степан** - <span style="color:red">*Frontend Developer // ЛУЧШИЙ ПИЗДБОЛ МИРА СТАЖ 30 ЛЕТ*</span>
-2. **Савран Дмитрий** - <span style="color:red">*Backend Developer // ПОДДАКИВАТЕЛЬ 3000*</span>
-3. **Богданович Кристина** - <span style="color:red">*Backend Developer // ГИГАЧАТ*</span>
+1. **Рыбаков Степан** - <span style="color:red">*Frontend Developer*</span>
+2. **Савран Дмитрий** - <span style="color:red">*Backend Developer*</span>
+3. **Богданович Кристина** - <span style="color:red">*Backend Developer*</span>
 
 АНЕГДОТ:
 Спрашивают моряка: Был ли случай, чтоб вам было реально страшно?
