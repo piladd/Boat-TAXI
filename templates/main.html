@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="icon" type="image/png" href="../static/icons/favicon.png">
+    <title>Boat Taxi</title>
+    <script src="https://maps.api.2gis.ru/2.0/loader.js?pkg=full&key=187703e6-b579-4ea7-80c9-25f85a09265f"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
+</head>
+<body>
+    <header class="container">
+        <div class="page-header">
+            <div class="logo">
+                <a href="#">Boat Taxi</a>
+            </div>
+            <input type="checkbox" id="click">
+
+            <label for="click" class="mainicon">
+                <div class="menu">
+                    <i class='bx bx-menu'></i>
+                </div>
+            </label>
+            <ul>
+                <li class="dropdown">
+                    <a href="javascript:void(0);" class="dropbtn" style="--navAni:1">Тарифы ↓</a>
+                    <div class="dropdown-content">
+                        <a href="standart.html">STANDARD</a>
+                        <a href="premium.html">PREMIUM</a>
+                        <a href="VIP.html">VIP</a>
+                    </div>
+                </li>
+                <li><a href="#" style="--navAni:2" id="open-history-link">История заказов</a></li>
+                <li><a href="QA.html" style="--navAni:3">Q & A</a></li>
+            </ul>
+            <label class="mode">
+                <input type="checkbox" id="darkModeToggle">
+                <i class='bx bxs-moon'></i>
+            </label>
+            <!-- редактирование акка -->
+            <div class="user-profile">
+                <img id="user-icon" src="../static/icons/userIcon.png" alt="User Icon" class="user-icon">
+                <div class="user-info">
+                    <span class="user-name">USERNAME</span>
+                </div>
+            </div>
+
+            <!-- Модальное окно для редактирования профиля -->
+            <div id="edit-user-modal" class="edit-user-modal" style="display:none;">
+                <div class="edit-user-modal-content">
+                    <span class="close-edit-modal">&times;</span>
+                    <h2>Редактирование профиля</h2>
+                    <!-- Содержимое для редактирования профиля -->
+                    <form id="edit-profile-form">
+                        <input type="text" id="modal-fullname" placeholder="Новое ФИО">
+                        <input type="password" id="modal-password" placeholder="Текущий пароль (для изменения ФИО)">
+                        <input type="password" id="modal-new-password"
+                            placeholder="Новый пароль (если хотите изменить)">
+                        <button type="submit">Сохранить изменения</button>
+                        <span class="logout-modal" onclick="window.location.href='/'"
+                            style="display: flex; align-items: center; cursor: pointer;">
+                            <i class='bx bx-log-out' style="font-size: 24px;"></i>
+                            <span style="margin-left: 8px; font-size: 16px;">Выход</span>
+                        </span>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="address-form">
+        <input type="text" id="from-input" placeholder="Откуда">
+        <input type="text" id="to-input" placeholder="Куда?">
+        <input type="'text" id="route-info" placeholder="Информация о вашей поездке" readonly>
+    </div>
+
+    <!-- Тарифы -->
+    <div class="tariff-selection">
+        <div class="tariff" data-tariff-type="Standart" role="button">
+            <img src="../static/icons/for-standart.jpg" alt="Иконка Стандарт" class="tariff-icon">
+            <div class="tariff-info">
+                <h3>Standart</h3>
+                <p class="tariff-price">от 555 ₽</p>
+            </div>
+        </div>
+        <div class="tariff" data-tariff-type="Premium" role="button">
+            <img src="../static/icons/for-premium.jpg" alt="Иконка Премиум" class="tariff-icon">
+            <div class="tariff-info">
+                <h3>Premium</h3>
+                <p class="tariff-price">от 1555 ₽</p>
+            </div>
+        </div>
+        <div class="tariff" data-tariff-type="VIP" role="button">
+            <img src="../static/icons/for-vip.jpg" alt="Иконка VIP" class="tariff-icon">
+            <div class="tariff-info">
+                <h3>VIP</h3>
+                <p class="tariff-price">от 5555 ₽</p>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="payment-method-selection">
+        <button id="payment-method-button" class="payment-method-button">
+            <span class="payment-method-label">Способ оплаты:</span>
+            <span id="payment-method-value" class="payment-method-value">
+                <img src="../static/icons/cash.svg" alt="Наличные" class="payment-method-icon">
+                Не выбран
+            </span>
+            <i class="input-icon uil uil-angle-right-b"></i>
+        </button>
+    </div>
+
+    <!-- Модальное окно выбора способа оплаты -->
+    <div id="payment-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Выберите способ оплаты</div>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="payment-options">
+                <div class="payment-option" data-value="0">
+                    <img class="payment-option-icon" src="../static/icons/cash.svg" alt="Наличные">
+                    <span class="payment-option-text">Наличные</span>
+                </div>
+                <div class="payment-option" data-value="1">
+                    <img class="payment-option-icon" src="../static/icons/credit-card.svg" alt="Карта">
+                    <span class="payment-option-text">Карта</span>
+                    <span id="card-last-four" class="payment-option-last-four">не привязана</span>
+                </div>
+                <div id="add-card-option" class="payment-option">
+                    <a href="credit_card.html" class="payment-option-link">
+                        <i class="input-icon uil uil-plus"></i> Добавить карту
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="order-button-container">
+        <button id="order-button" class="order-button">ЗАКАЗАТЬ</button>
+    </div>
+
+
+    <div id="map"></div>
+
+    <!-- Кнопки масштабирования -->
+    <div class="zoom-control">
+        <button class="zoom-in">+</button>
+        <button class="zoom-out">-</button>
+    </div>
+
+    <!-- Кнопка геолокации -->
+    <div class="geolocation-control">
+        <button id="geolocation-button"><i class='bx bx-navigation'></i></button>
+    </div>
+    <!-- история заказов -->
+    <div id="trip-history-modal" class="history-modal">
+        <div class="history-modal-content">
+            <span class="history-close-btn">&times;</span>
+            <h2>История поездок</h2>
+            <div id="trip-history">Здесь будет история ваших поездок!</div>
+        </div>
+    </div>
+
+    <div id="loadingModal" class="loading-modal" style="display:none;">
+        <div class="loading-content">
+            <img src="../static/icons/loading.gif" alt="Загрузка..." />
+            <h2>Заказ успешно создан!</h2>
+            <h2>Начинаем поиск капитана...</h2>
+        </div>
+    </div>
+
+
+    <!-- Модальное окно для информации о капитане -->
+    <div id="driver-info-modal" class="modal-driver">
+        <div class="modal-content-driver">
+            <span class="close-driver-info-modal">&times;</span>
+            <h3>Информация о поездке</h3>
+            <div class="modal-body">
+                <div class="modal-text">
+                    <p id="driver-waiting-time"><i class="input-icon uil uil-clock"></i> Через Х мин приплывет</p>
+                    <p id="driver-car"><i class="uim uim-car-sideview"></i> Лодка: Х</p>
+                    <p id="driver-name"><i class="input-icon uil uil-user"></i>Ваш капитан: ХХХ</p>
+                    <p id="driver-rating"><i class="input-icon uil uil-star"></i> Рейтинг: Х.Х</p>
+                </div>
+                <div class="modal-image">
+                    <img id="car-image" src="../static/icons/for-standart.jpg" alt="Bot Image">
+                    <div id="car-number-box">хХХХххХХ</div>
+                </div>
+            </div>
+            <button id="close-modal-btn">Понятно</button>
+        </div>
+    </div>
+
+    <!-- оценка водителей -->
+    <div id="rating-modal-overlay" class="rating-modal-overlay"></div>
+    <!-- Модальное окно для оценки ВОДИТЕЛЯ -->
+    <div id="rating-modal" class="rating-modal">
+        <div class="rating-modal-content">
+            <button class="close-rating-modal">&times;</button>
+            <h2>Спасибо за поездку!</h2>
+            <p>Пожалуйста, оцените вашего капитана:</p>
+            <form id="rating-form" class="rating">
+                <div class="rating__stars">
+                    <input id="rating-1" class="rating__input rating__input-1" type="radio" name="rating" value="1">
+                    <input id="rating-2" class="rating__input rating__input-2" type="radio" name="rating" value="2">
+                    <input id="rating-3" class="rating__input rating__input-3" type="radio" name="rating" value="3">
+                    <input id="rating-4" class="rating__input rating__input-4" type="radio" name="rating" value="4">
+                    <input id="rating-5" class="rating__input rating__input-5" type="radio" name="rating" value="5">
+                    <label class="rating__label" for="rating-1">
+                        <svg class="rating__star" width="32" height="32" viewBox="0 0 32 32" aria-hidden="true">
+                            <g transform="translate(16,16)">
+                                <circle class="rating__star-ring" fill="none" stroke="#000" stroke-width="16" r="8"
+                                    transform="scale(0)" />
+                            </g>
+                            <g stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <g transform="translate(16,16) rotate(180)">
+                                    <polygon class="rating__star-stroke"
+                                        points="0,15 4.41,6.07 14.27,4.64 7.13,-2.32 8.82,-12.14 0,-7.5 -8.82,-12.14 -7.13,-2.32 -14.27,4.64 -4.41,6.07"
+                                        fill="none" />
+                                    <polygon class="rating__star-fill"
+                                        points="0,15 4.41,6.07 14.27,4.64 7.13,-2.32 8.82,-12.14 0,-7.5 -8.82,-12.14 -7.13,-2.32 -14.27,4.64 -4.41,6.07"
+                                        fill="#000" />
+                                </g>
+                                <g transform="translate(16,16)" stroke-dasharray="12 12" stroke-dashoffset="12">
+                                    <polyline class="rating__star-line" transform="rotate(0)" points="0 4,0 16" />
+                                    <polyline class="rating__star-line" transform="rotate(72)" points="0 4,0 16" />
+                                    <polyline class="rating__star-line" transform="rotate(144)" points="0 4,0 16" />
+                                    <polyline class="rating__star-line" transform="rotate(216)" points="0 4,0 16" />
+                                    <polyline class="rating__star-line" transform="rotate(288)" points="0 4,0 16" />
+                                </g>
+                            </g>
+                        </svg>
+                        <span class="rating__sr">1 звезда-Ужасно</span>
+                    </label>
+                    <label class="rating__label" for="rating-2">
+                        <svg class="rating__star" width="32" height="32" viewBox="0 0 32 32" aria-hidden="true">
+                            <g transform="translate(16,16)">
+                                <circle class="rating__star-ring" fill="none" stroke="#000" stroke-width="16" r="8"
+                                    transform="scale(0)" />
+                            </g>
+                            <g stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <g transform="translate(16,16) rotate(180)">
+                                    <polygon class="rating__star-stroke"
+                                        points="0,15 4.41,6.07 14.27,4.64 7.13,-2.32 8.82,-12.14 0,-7.5 -8.82,-12.14 -7.13,-2.32 -14.27,4.64 -4.41,6.07"
+                                        fill="none" />
+                                    <polygon class="rating__star-fill"
+                                        points="0,15 4.41,6.07 14.27,4.64 7.13,-2.32 8.82,-12.14 0,-7.5 -8.82,-12.14 -7.13,-2.32 -14.27,4.64 -4.41,6.07"
+                                        fill="#000" />
+                                </g>
+                                <g transform="translate(16,16)" stroke-dasharray="12 12" stroke-dashoffset="12">
+                                    <polyline class="rating__star-line" transform="rotate(0)" points="0 4,0 16" />
+                                    <polyline class="rating__star-line" transform="rotate(72)" points="0 4,0 16" />
+                                    <polyline class="rating__star-line" transform="rotate(144)" points="0 4,0 16" />
+                                    <polyline class="rating__star-line" transform="rotate(216)" points="0 4,0 16" />
+                                    <polyline class="rating__star-line" transform="rotate(288)" points="0 4,0 16" />
+                                </g>
+                            </g>
+                        </svg>
+                        <span class="rating__sr">2 звезды-Плохо</span>
+                    </label>
+                    <label class="rating__label" for="rating-3">
+                        <svg class="rating__star" width="32" height="32" viewBox="0 0 32 32" aria-hidden="true">
+                            <g transform="translate(16,16)">
+                                <circle class="rating__star-ring" fill="none" stroke="#000" stroke-width="16" r="8"
+                                    transform="scale(0)" />
+                            </g>
+                            <g stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <g transform="translate(16,16) rotate(180)">
+                                    <polygon class="rating__star-stroke"
+                                        points="0,15 4.41,6.07 14.27,4.64 7.13,-2.32 8.82,-12.14 0,-7.5 -8.82,-12.14 -7.13,-2.32 -14.27,4.64 -4.41,6.07"
+                                        fill="none" />
+                                    <polygon class="rating__star-fill"
+                                        points="0,15 4.41,6.07 14.27,4.64 7.13,-2.32 8.82,-12.14 0,-7.5 -8.82,-12.14 -7.13,-2.32 -14.27,4.64 -4.41,6.07"
+                                        fill="#000" />
+                                </g>
+                                <g transform="translate(16,16)" stroke-dasharray="12 12" stroke-dashoffset="12">
+                                    <polyline class="rating__star-line" transform="rotate(0)" points="0 4,0 16" />
+                                    <polyline class="rating__star-line" transform="rotate(72)" points="0 4,0 16" />
+                                    <polyline class="rating__star-line" transform="rotate(144)" points="0 4,0 16" />
+                                    <polyline class="rating__star-line" transform="rotate(216)" points="0 4,0 16" />
+                                    <polyline class="rating__star-line" transform="rotate(288)" points="0 4,0 16" />
+                                </g>
+                            </g>
+                        </svg>
+                        <span class="rating__sr">3 звезды-Нормально</span>
+                    </label>
+                    <label class="rating__label" for="rating-4">
+                        <svg class="rating__star" width="32" height="32" viewBox="0 0 32 32" aria-hidden="true">
+                            <g transform="translate(16,16)">
+                                <circle class="rating__star-ring" fill="none" stroke="#000" stroke-width="16" r="8"
+                                    transform="scale(0)" />
+                            </g>
+                            <g stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <g transform="translate(16,16) rotate(180)">
+                                    <polygon class="rating__star-stroke"
+                                        points="0,15 4.41,6.07 14.27,4.64 7.13,-2.32 8.82,-12.14 0,-7.5 -8.82,-12.14 -7.13,-2.32 -14.27,4.64 -4.41,6.07"
+                                        fill="none" />
+                                    <polygon class="rating__star-fill"
+                                        points="0,15 4.41,6.07 14.27,4.64 7.13,-2.32 8.82,-12.14 0,-7.5 -8.82,-12.14 -7.13,-2.32 -14.27,4.64 -4.41,6.07"
+                                        fill="#000" />
+                                </g>
+                                <g transform="translate(16,16)" stroke-dasharray="12 12" stroke-dashoffset="12">
+                                    <polyline class="rating__star-line" transform="rotate(0)" points="0 4,0 16" />
+                                    <polyline class="rating__star-line" transform="rotate(72)" points="0 4,0 16" />
+                                    <polyline class="rating__star-line" transform="rotate(144)" points="0 4,0 16" />
+                                    <polyline class="rating__star-line" transform="rotate(216)" points="0 4,0 16" />
+                                    <polyline class="rating__star-line" transform="rotate(288)" points="0 4,0 16" />
+                                </g>
+                            </g>
+                        </svg>
+                        <span class="rating__sr">4 звезды-Хорошо</span>
+                    </label>
+                    <label class="rating__label" for="rating-5">
+                        <svg class="rating__star" width="32" height="32" viewBox="0 0 32 32" aria-hidden="true">
+                            <g transform="translate(16,16)">
+                                <circle class="rating__star-ring" fill="none" stroke="#000" stroke-width="16" r="8"
+                                    transform="scale(0)" />
+                            </g>
+                            <g stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <g transform="translate(16,16) rotate(180)">
+                                    <polygon class="rating__star-stroke"
+                                        points="0,15 4.41,6.07 14.27,4.64 7.13,-2.32 8.82,-12.14 0,-7.5 -8.82,-12.14 -7.13,-2.32 -14.27,4.64 -4.41,6.07"
+                                        fill="none" />
+                                    <polygon class="rating__star-fill"
+                                        points="0,15 4.41,6.07 14.27,4.64 7.13,-2.32 8.82,-12.14 0,-7.5 -8.82,-12.14 -7.13,-2.32 -14.27,4.64 -4.41,6.07"
+                                        fill="#000" />
+                                </g>
+                                <g transform="translate(16,16)" stroke-dasharray="12 12" stroke-dashoffset="12">
+                                    <polyline class="rating__star-line" transform="rotate(0)" points="0 4,0 16" />
+                                    <polyline class="rating__star-line" transform="rotate(72)" points="0 4,0 16" />
+                                    <polyline class="rating__star-line" transform="rotate(144)" points="0 4,0 16" />
+                                    <polyline class="rating__star-line" transform="rotate(216)" points="0 4,0 16" />
+                                    <polyline class="rating__star-line" transform="rotate(288)" points="0 4,0 16" />
+                                </g>
+                            </g>
+                        </svg>
+                        <span class="rating__sr">5 звезд-Прекрасно</span>
+                    </label>
+                    <p class="rating__display" data-rating="1" hidden>Очень плохо</p>
+                    <p class="rating__display" data-rating="2" hidden>Плохо</p>
+                    <p class="rating__display" data-rating="3" hidden>Нормально</p>
+                    <p class="rating__display" data-rating="4" hidden>Хорошо</p>
+                    <p class="rating__display" data-rating="5" hidden>Прекрасно</p>
+                </div>
+                <button id="submit-rating" type="submit">Подтвердить</button>
+            </form>
+        </div>
+    </div>
+    <!-- Модальное окно "Спасибо за оценку" -->
+    <div id="thank-you-modal" class="thank-you-modal">
+        <div class="thank-you-modal-content">
+            <span class="close-thank-you-modal">&times;</span>
+            <p>Спасибо за вашу оценку и выбор нашего такси!</p>
+        </div>
+    </div>
+
+    <script>
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const body = document.body;
+        const isDarkMode = localStorage.getItem('darkMode') === 'enabled';
+        if (isDarkMode) {
+            body.classList.add('dark-mode');
+            darkModeToggle.checked = true;
+        }
+        darkModeToggle.addEventListener('change', () => {
+            if (darkModeToggle.checked) {
+                body.classList.add('dark-mode');
+                localStorage.setItem('darkMode', 'enabled');
+            } else {
+                body.classList.remove('dark-mode');
+                localStorage.setItem('darkMode', 'disabled');
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('DOM полностью загружен и обработан');
+
+            const modal = document.getElementById('trip-history-modal');
+            const closeButton = document.querySelector('.history-close-btn');
+            const openHistoryLink = document.getElementById('open-history-link');
+            const tripList = document.getElementById('trip-history');
+
+            if (!modal) {
+                console.error('Модальное окно не найдено.');
+                return;
+            }
+
+            if (!closeButton) {
+                console.error('Кнопка закрытия модального окна не найдена.');
+                return;
+            }
+
+            if (!openHistoryLink) {
+                console.error('Ссылка для открытия истории заказов не найдена.');
+                return;
+            }
+
+            function openTripHistoryModal() {
+                console.log('Попытка открыть модальное окно');
+                modal.style.display = 'block';
+                fetchUserTrips();
+            }
+
+            function closeTripHistoryModal() {
+                console.log('Попытка закрыть модальное окно');
+                modal.style.display = 'none';
+            }
+
+            function fetchUserTrips() {
+                console.log('Попытка получить историю поездок');
+                const userId = getUserId(); // Получаем ID пользователя из вашей функции
+                if (!userId) {
+                    console.error("User ID не определен или недействителен.");
+                    alert('Пожалуйста, войдите в систему перед запросом истории поездок.');
+                    return;
+                }
+
+                const url = `/api/orders/${userId}`;
+                console.log('Fetching from URL:', url);
+
+                fetch(url)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Ошибка при загрузке истории поездок: ' + response.statusText);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.length === 0) {
+                            console.log('Нет данных о поездках.');
+                            tripList.innerHTML = '<li>У вас еще нет поездок.</li>';
+                        } else {
+                            renderTripHistory(data);
+                        }
+                    })
+                    .catch(error => {
+                        tripList.innerHTML = '<li>У вас еще нет поездок.</li>';
+                    });
+            }
+
+            function formatDateTime(dateTime) {
+                const date = new Date(dateTime);
+                const options = { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' };
+                return date.toLocaleString('ru-RU', options);
+            }
+
+            function renderTripHistory(data) {
+                tripList.innerHTML = '';
+                data.forEach(trip => {
+                    const li = document.createElement('li');
+
+                    const tripIcon = document.createElement('div');
+                    tripIcon.className = 'trip-icon';
+                    tripIcon.innerHTML = '<img src="../static/icons/history-boat.webp" alt="boat">'; // Замените путь к иконке
+
+                    const tripDetails = document.createElement('div');
+                    tripDetails.className = 'trip-details';
+                    tripDetails.innerHTML = `
+                <div>Откуда: ${trip.pickup_location}</div>
+                <div>Куда: ${trip.destination}</div>
+                <div class="trip-info">
+                    <span class="trip-amount">${trip.order_amount}</span>
+                    <span class="trip-time">${formatDateTime(trip.start_time)}</span>
+                </div>
+            `;
+
+                    li.appendChild(tripIcon);
+                    li.appendChild(tripDetails);
+                    tripList.appendChild(li);
+                });
+            }
+
+            openHistoryLink.addEventListener('click', function (event) {
+                event.preventDefault();
+                openTripHistoryModal();
+            });
+
+            closeButton.addEventListener('click', closeTripHistoryModal);
+
+            window.addEventListener('click', function (event) {
+                if (event.target === modal) {
+                    closeTripHistoryModal();
+                }
+            });
+        });
+
+        function getUserId() {
+            const userId = Number(localStorage.getItem('userId'));
+            if (!userId || isNaN(userId)) {
+                console.error("User ID не определен или недействителен:", userId);
+                alert('Пожалуйста, войдите в систему перед завершением поездки.');
+                return null;
+            }
+            return userId;
+        }
+    </script>
+    <!-- <script src="{{ url_for('static', filename='js/main.js') }}" async></script> -->
+    <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
+</body>
+</html>

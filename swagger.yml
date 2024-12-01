@@ -1,0 +1,451 @@
+openapi: 3.0.0
+info:
+  title: "BIGGS_TAXI"
+  description: "An API about BIGGS taxi app, covering both user registration/authentication and order management."
+  version: "1.0.0"
+
+servers:
+  - url: "/api"
+
+components:
+  schemas:
+    CreateUser:
+      type: "object"
+      required:
+        - fullname
+        - username
+        - email
+        - password
+      properties:
+        fullname:
+          type: "string"
+        username:
+          type: "string"
+        email:
+          type: "string"
+        password:
+          type: "string"
+    EnterUser:
+      type: "object"
+      required:
+        - login_or_email
+        - password
+      properties:
+        login_or_email:
+          type: "string"
+        password:
+          type: "string"
+    Order:
+      type: "object"
+      required:
+        - user_id
+        - pickup_location
+        - destination
+        - distance
+        - boat_category
+        - order_amount
+        - start_time
+        - end_time
+        - total_ride_time
+        - payment_method
+      properties:
+        user_id:
+          type: "integer"
+        pickup_location:
+          type: "string"
+        destination:
+          type: "string"
+        distance:
+          type: "number"
+        car_category:
+          type: "string"
+        start_time:
+          type: "string"
+        end_time:
+          type: "string"
+        total_ride_time:
+          type: "integer"
+        order_amount:
+          type: "integer"
+        payment_method:
+          type: "string"
+    ChangeFullname:
+      type: "object"
+      required:
+        - id
+        - new_fullname
+        - password
+      properties:
+        id:
+          type: "integer"
+        new_fullname:
+          type: "string"
+        password:
+          type: "string"
+    ChangePassword:
+      type: "object"
+      required:
+        - id
+        - new_password
+        - password
+      properties:
+        id:
+          type: "integer"
+        new_password:
+          type: "string"
+        password:
+          type: "string"
+    ChangePaymentMethod:
+      type: "object"
+      required:
+        - id
+        - new_payment_method
+      properties:
+        id:
+          type: "integer"
+        new_payment_method:
+          type: "string"
+        password:
+          type: "string"
+    AddCard:
+      type: "object"
+      required:
+        - id
+        - card_number
+        - card_holder
+        - month
+        - year
+        - cvv
+      properties:
+        id:
+          type: "integer"
+        card_number:
+          type: "string"
+        card_holder:
+          type: "string"
+        month:
+          type: "string"
+        year:
+          type: "string"
+        cvv:
+          type: "string"
+    GetCard:
+      type: "object"
+      required:
+        - id
+      properties:
+        id:
+          type: "integer"
+    Error:
+      type: "object"
+      properties:
+        message:
+          type: "string"
+  responses:
+    BadRequest:
+      description: "Invalid request parameters"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: "Resource not found"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Error:
+      description: "General error response"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  parameters:
+    userIdParam:
+      name: "user_id"
+      in: "path"
+      required: true
+      schema:
+        type: "string"
+    tripIdParam:
+      name: "trip_id"
+      in: "path"
+      required: true
+      schema:
+        type: "string"
+
+paths:
+  /:
+    get:
+      operationId: "main.index"
+      tags:
+        - "Start window"
+      summary: "Opens the start window."
+      responses:
+        "200":
+          description: "Start window was opened successfully."
+
+  /registration:
+    post:
+      operationId: "src.controllers.login_controller.registration"
+      tags:
+        - "Register"
+      summary: "Register a new user."
+      requestBody:
+        description: "User to register"
+        required: True
+        content:
+          application/json:
+            schema:
+              x-body-name: "user"
+              $ref: "#/components/schemas/CreateUser"
+      responses:
+        "201":
+          description: "User was successfully registered."
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /entrance:
+    post:
+      operationId: "src.controllers.login_controller.entrance"
+      tags:
+        - "Enter"
+      summary: "User enters with their email and password."
+      requestBody:
+        description: "User enters"
+        required: True
+        content:
+          application/json:
+            schema:
+              x-body-name: "user"
+              $ref: "#/components/schemas/EnterUser"
+      responses:
+        "200":
+          description: "User successfully entered."
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /orders:
+    get:
+      operationId: "src.controllers.orders_controller.get_all_trips"
+      tags:
+        - "Orders"
+      summary: "Read the list of people"
+      responses:
+        "200":
+          description: "Successfully read people list"
+
+    post:
+      operationId: "src.controllers.orders_controller.create_order"
+      tags:
+        - "Orders"
+      summary: "Getting order information"
+      requestBody:
+        description: "Order to create"
+        required: True
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Order"
+      responses:
+        "201":
+          description: "The order data has been successfully received"
+
+  /orders/{user_id}:
+    get:
+      operationId: "src.controllers.orders_controller.get_user_trip_history"
+      tags:
+        - "Orders"
+      summary: "Get orders by person ID"
+      parameters:
+        - $ref: "#/components/parameters/userIdParam"
+      responses:
+        "200":
+          description: "Successful operation"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/Order"
+
+  /orders/complete:
+    post:
+      operationId: "src.controllers.orders_controller.complete_order"
+      tags:
+        - "Orders"
+      summary: "Complete order"
+      description: "Complete the specified order and update driver status."
+      requestBody:
+        description: "Order completion details"
+        required: true
+        content:
+          application/json:
+            schema:
+              type: "object"
+              required:
+                - order_id
+                - driver_id
+                - user_rating
+              properties:
+                order_id:
+                  type: "integer"
+                  description: "The ID of the order to be completed"
+                driver_id:
+                  type: "integer"
+                  description: "The ID of the driver who completed the order"
+                user_rating:
+                  type: "integer"
+                  description: "The rating given by the user for the completed order"
+      responses:
+        "200":
+          description: "Order successfully completed and driver's status and rating updated"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /orders/get_order_id:
+    get:
+      operationId: "src.controllers.orders_controller.get_order_id"
+      tags:
+        - "Orders"
+      summary: "Get orders by user ID"
+      description: "Retrieve orders for a specific user by their ID."
+      parameters:
+        - name: user_id
+          in: query
+          description: "User ID to retrieve orders"
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: "Successful operation"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  order_id:
+                    type: "integer"
+                  driver_id:
+                    type: "integer"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /trips/{trip_id}:
+    delete:
+      summary: "Delete trip by its identifier"
+      description: "Deletes a trip from the CSV file by its identifier."
+      operationId: "src.controllers.orders_controller.delete_trip_by_id"
+      tags:
+        - "Orders"
+      parameters:
+        - $ref: "#/components/parameters/tripIdParam"
+      responses:
+        "200":
+          description: "Trip successfully deleted"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  
+  /changes/change_fullname:
+    put:
+      summary: "Changes the user's fullname."
+      operationId: "src.controllers.account_controller.change_fullname"
+      tags:
+        - "User Changes"
+      requestBody:
+        description: "Request to change user's fullname."
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangeFullname'
+      responses:
+        "200":
+          description: "Fullname was successfully changed."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        "400":
+          $ref: '#/components/responses/BadRequest'
+  
+  /changes/change_password:
+    put:
+      operationId: "src.controllers.account_controller.change_password"
+      tags:
+        - "Changes"
+      summary: "Changes the password of a user."
+      requestBody:
+        description: "Changes the parameter password of the database dataUsers.db"
+        required: True
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangePassword"
+      responses:
+        "200":
+          description: "Password was successfully changed"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  
+  /changes/change_payment_method:
+    put:
+      operationId: "src.controllers.account_controller.change_payment_method"
+      tags:
+        - "Changes"
+      summary: "Changes the payment method of a user."
+      requestBody:
+        description: "Changes thr parameter payment_method of the database dataUsers.db"
+        required: True
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangePaymentMethod"
+      responses:
+        "200":
+          description: "Payment method was successfully changed."
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  /changes/add_card:
+    post:
+      operationId: "src.controllers.cards_controller.add_card"
+      tags:
+        - "Cards"
+      summary: "Adds for user new card."
+      requestBody:
+        description: "Adds for a user's id new card with parametres: card number, card holder's name, date and cvv."
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddCard"
+      responses:
+        "200":
+          description: "Card was successfully added."
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  /changes/get_card:
+    post:
+      operationId: "src.controllers.cards_controller.get_card"
+      tags:
+        - "Cards"
+      summary: "Returns card's last 4 numbers by user's id."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GetCard"
+      responses:
+        "200":
+          description: "Card information was returned"
+        "400":
+          $ref: "#/components/responses/BadRequest"
